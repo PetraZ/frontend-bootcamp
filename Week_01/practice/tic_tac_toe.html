@@ -1,0 +1,190 @@
+<style>
+    .cell {
+        width: 100px;
+        height: 100px;
+        background-color: green;
+        display: inline-block;
+        border: solid 1px white;
+        vertical-align: middle;
+
+        line-height: 100px;
+        font-size: 50px;
+        text-align: center;
+    }
+</style>
+
+
+<!-- easier to apply css -->
+<div id="board"></div>
+
+<script>
+    // initialize the board pattern
+    // 1 and 2 stand for two users' move here, while 0 means it's still empty
+    // 1: O    2: X
+    let pattern = [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+    ];
+    // next movement color 
+    let color = 1;
+    // ultimate result
+    let win = false;
+
+    // show refreshes and prints the current board
+    function show() {
+        let board = document.getElementById("board")
+        board.innerHTML = "";
+        for(let i=0; i<3; i++) {
+            for (let j=0; j<3; j++) {
+                let cell = document.createElement("div")
+                // add cell to its node attribute
+                cell.classList.add("cell")
+                cell.innerText = 
+                pattern[i][j] == 2 ? "X" : 
+                pattern[i][j] == 1 ? "O" : ""
+    
+                cell.addEventListener("click", () => move(i, j))
+                board.appendChild(cell)
+            }
+            board.append(document.createElement("br"))
+        }
+
+        let button = document.createElement("button")
+        button.innerHTML = "Restart"
+        button.addEventListener("click", () => restart())
+        board.append(button)
+    }
+    function restart() {
+        pattern = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+        ];
+        // next movement color 
+        color = 1;
+        // ultimate result
+        win = false;
+        show()
+        return
+    }
+
+    // move adds a movement on current board
+    function move(i, j) {
+        if (pattern[i][j] !== 0) {
+            return
+        }
+        if (win) {
+            alert("It's game!")
+            return
+        }
+        pattern[i][j] = color;
+        show()
+        if (checkWin(pattern)) {
+            win = true
+            alert(color==2? "X is the winner": "O is the winner")
+            return
+        }
+        color = flipColor(color);
+        computerMove()
+    }
+    function flipColor(color) {
+        return 3 - color
+    }
+
+    function computerMove() {
+        let choice = getBestMove(pattern, color);
+        if (choice.move) {
+            pattern[choice.move[0]][choice.move[1]] = color
+        }
+        if (checkWin(pattern)) {
+            alert(color==2? "X is the winner": "O is the winner")
+        }
+
+        show()
+        color = flipColor(color)
+    }
+
+    function checkWin(pattern) {
+        // row wise win
+        for(let i=0; i<3; i++) {
+            let rowValue = 3;
+            for (let j=0; j<3; j++) {
+                rowValue = rowValue & pattern[i][j]        
+            }
+            if (rowValue !== 0) {
+                return true
+            }
+        }
+        // col wise win
+        for(let j=0; j<3; j++) {
+            let colValue = 3;
+            for (let i=0; i<3; i++) {
+                colValue = colValue & pattern[i][j]        
+            }
+            if (colValue !== 0) {
+                return true
+            }
+        }
+
+        // 00 11 22
+        let diaValue = 3;
+        for(let i=0; i<3; i++) {
+            diaValue = diaValue & pattern[i][i]
+        }
+        if (diaValue !== 0) {
+            return true
+        }
+
+        // 02 11 20
+        diaValue = 3;
+        for(let i=0; i<3; i++) {
+            diaValue = diaValue & pattern[i][2-i]
+        }
+        if (diaValue !== 0) {
+            return true
+        }
+        return false
+    };
+
+    function clone(pattern) {
+        return JSON.parse(JSON.stringify(pattern))
+    }
+
+    function getBestMove(pattern, color) {
+
+        // set the init value to be the worst, worse than -1(me lost)
+        let bestResult = -2
+        let bestMove = null
+
+        for(let i=0; i<3; i++) {
+            for(let j=0; j<3; j++) {
+                if (pattern[i][j] != 0) {
+                    continue
+                }
+                // copy pattern here 
+                let clonePattern = clone(pattern)
+                clonePattern[i][j] = color
+                if (checkWin(clonePattern)) {
+                    return {
+                        move: [i, j],
+                        result: 1
+                    }
+                }
+                // if 1 here, means you opponent win
+                let v = getBestMove(clonePattern, flipColor(color)).result
+                if (-v > bestResult) {
+                    bestResult = -v
+                    bestMove = [i, j]
+                }
+            }
+        }
+        return {
+            move: bestMove,
+            result: bestMove ? bestResult : 0
+        }
+    }
+
+    show()
+    console.log(getBestMove(pattern, color))
+</script>

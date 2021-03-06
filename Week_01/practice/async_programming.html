@@ -1,0 +1,106 @@
+<style>
+    div {
+        background-color: grey;
+        display: inline-block;
+        border-radius: 50px;
+        height: 100px;
+        width: 100px;
+    }
+
+    .green.light {
+        background-color: green;
+    }
+    .yellow.light {
+        background-color: yellow;
+    }
+    .red.light {
+        background-color: red;
+    }
+</style>
+
+<div class="green"></div>
+<div class="yellow"></div>
+<div class="red"></div>
+
+<script>
+    function removeLights() {
+        let lights = document.getElementsByTagName("div")
+        for(let i = 0; i < 3; i++) {
+            lights[i].classList.remove("light")
+        }
+    }
+    function green() {
+        removeLights()
+        document.getElementsByClassName("green")[0].classList.add("light")
+    }
+    function red() {
+        removeLights()
+        document.getElementsByClassName("red")[0].classList.add("light")
+    }
+    function yellow() {
+        removeLights()
+        document.getElementsByClassName("yellow")[0].classList.add("light")
+    }
+
+    function go() {
+        green()
+        // setTimeout is a async call to webapi
+        setTimeout(
+            // callback
+            function() {
+                yellow()
+                setTimeout(
+                    function() {
+                        red()
+                        setTimeout(
+                            go,
+                            1000
+                        )
+                    },
+                    2000,
+                )
+            },
+            5000,
+        )
+    }
+
+    // a promise a object takes in a specialized callback func (resolve, reject) => {}
+    // Promises are eager, meaning that a promise will start doing whatever task you give it
+    // as soon as the promise constructor is invoked. If you need lazy, 
+    // check out observables or tasks.
+
+    // let a = new Promise((resolve, reject) => {
+    //     setTimeout(()=>{console.log("haha")}, 1000)
+    //     console.log("hello world")
+    // }) 
+    
+    // once the constructor called, the inside func is called
+    const wait = time => new Promise((resolve) => setTimeout(resolve, time));
+    // the then method is basically asycnously waiting for resolve being called and then callback will be put in event loop
+    
+    function go2() {
+        green();
+        wait(5000).then(() => {
+            yellow()
+            // then will return the return of the callback
+            return wait(1000)
+        }).then(() => {
+            red()
+            return wait(1000)
+        }).then(go2)
+    }
+
+    async function go3() {
+        while(true) {
+            green()
+            // can only be used in async func and this is blocking
+            await wait(5000)
+            console.log("green part is done")
+            yellow()
+            await wait(1000)
+            red()
+            await wait(1000)
+        }
+    }
+    // go()
+</script>

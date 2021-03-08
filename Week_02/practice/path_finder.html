@@ -1,16 +1,238 @@
 <style>
-
+    .cell {
+        display: inline-block;
+        line-height: 7px;
+        width: 6px;
+        height: 6px;
+        border-bottom: solid 1px white;
+        border-right: solid 1px white;
+        background-color: grey;
+        vertical-align: middle;
+    }
+    #container{
+        width: 701px;
+    }
 </style>
 
 <div id="container"></div>
+<button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+<button onclick="localStorage.clear()">clear</button>
 
 <script>
-
+    // localStorage is a window obj
+    let map = localStorage["map"] ? JSON.parse(localStorage["map"]) : Array(10000).fill(0);
     let container = document.getElementById("container");
+    let pointToIndex = (point) => {return 100 * point[0] + point[1]}
     for(let i = 0; i < 100; i++) {
         for (let j = 0; j < 100; j++) {
+            let idx = pointToIndex([i, j]);
             let cell = document.createElement("div")
+            cell.classList.add("cell")
+            if(map[idx] == 1) {
+                cell.style.backgroundColor = "black";
+            }
+            cell.addEventListener("mousemove", () => {
+                if(mousedown) {
+                    if (clear) {
+                        cell.style.backgroundColor = "";
+                        map[idx] = 0;
+                    } else {
+                        cell.style.backgroundColor = "black";
+                        map[idx] = 1;
+                    }
+                }
+            })
+            container.appendChild(cell)
         }
     }
 
+    let mousedown = false
+    let clear = false
+    
+    document.addEventListener("mouseup", () => mousedown = false)
+    document.addEventListener("mousedown", e => {
+        mousedown = true
+        // 0 no button 1 left button 2 middle button 3 right button
+        clear = (e.which === 3) 
+    })
+    document.addEventListener("contextmenu", e => e.preventDefault());
+    let wait = (time) => new Promise((resolve, reject) => setTimeout(resolve, time));
+
+    
+    // class MinHeap {
+    //     constructor(data, compare) {
+    //         this.lst = [null]
+    //         for (let i = 0; i < data.length; i++) {
+    //             this.insert(data[i])
+    //         }
+    //         this.compare = compare
+    //         this.n = data.length
+    //     }
+
+    //     less(i, j) {
+    //         return this.compare(this.lst[i], this.lst[j]) < 0
+    //     }
+    //     exch(i, j) {
+    //         let tmp = this.lst[i]
+    //         this.lst[i] = this.lst[j]
+    //         this.lst[j] = tmp
+    //     }
+    //     swim(k) {
+    //         while (k > 1 && this.less(k, Math.floor(k/2))) {
+    //             let parent = Math.floor(k/2)
+    //             this.exch(k, parent)
+    //             k = parent
+    //         }
+    //     }
+    //     sink(k) {
+    //         while(2*k <= this.n) {
+    //             let j = 2*k
+    //             if (j < this.n && this.less(j+1, j)) {j++}
+    //             if (this.less(k, j)) {break}
+    //             this.exch(k, j)
+    //             k = j
+    //         }
+    //     }
+    //     insert(k) {
+    //         this.n++;
+    //         this.lst.push(k)
+    //         this.swim(this.n)
+    //     }
+    //     pop() {
+    //         if (this.n <= 0) {return null}
+    //         let min = this.lst[1]
+    //         this.exch(1, this.n)
+    //         this.n--
+    //         this.sink(1)
+    //         return min
+    //     }
+
+    //     length() {
+    //         return this.n
+    //     }
+    // }
+
+    class Sorted {
+        constructor(data, compare) {
+            this.data = data
+            this.compare = compare || ((a, b) => a - b)
+        }
+        take() {
+            if (!this.data.length) return
+            let min = this.data[0]
+            let minIdx = 0
+            for (let i = 0; i < this.data.length; i++) {
+                if (this.compare(min, this.data[i]) > 0) {
+                    min = this.data[i]
+                    minIdx = i
+                }
+            }
+            this.data[minIdx] = this.data[this.data.length - 1]
+            this.data.pop()
+            return min
+        }
+        give(v) {
+            this.data.push(v)
+        }
+    };
+
+    async function findPathAStar(map, start, end) {
+        let fromPointMap = Array(10000).fill(0);
+        container.children[pointToIndex(start)].style.backgroundColor = "red"
+        container.children[pointToIndex(end)].style.backgroundColor = "blue"
+        async function addPoint(queue, x, y, p) {
+            if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+                return 
+            }
+            let idx = pointToIndex([x, y]);
+            if (map[idx] !== 0) {
+                return
+            }
+            fromPointMap[idx] = pointToIndex(p)
+            // await wait(10)
+            // to distinguish from 1 --> block 2--> visited(on the queue) 0 --> unvisited
+            map[idx] = 2
+            queue.give([x, y])
+            console.log(queue.lst)
+        }
+        let distance = (p) => {return (p[0] - end[0]) ** 2 + (p[1] - end[1]) ** 2}
+        let queue = new Sorted([start], (a, b) => distance(a) - distance(b))
+        while (queue.data.length !== 0) {
+            let [x, y] = queue.take();
+            console.log(x, y)
+            let idx = pointToIndex([x,y]);
+            if (x == end[0] && y == end[1]) {
+                let p = pointToIndex([x,y])
+                while (p !== pointToIndex(start)) {
+                    await wait(10)
+                    container.children[p].style.backgroundColor = "yellow"
+                    p = fromPointMap[p]
+                }
+                container.children[p].style.backgroundColor = "yellow"
+                return true
+            }
+            container.children[idx].style.backgroundColor = "lightgreen";
+
+            await addPoint(queue, x + 1, y, [x, y])
+            await addPoint(queue, x - 1, y, [x, y])
+            await addPoint(queue, x, y + 1, [x, y])
+            await addPoint(queue, x, y - 1, [x, y])
+
+            await addPoint(queue, x - 1, y - 1, [x, y])
+            await addPoint(queue, x - 1, y + 1, [x, y])
+            await addPoint(queue, x + 1, y - 1, [x, y])
+            await addPoint(queue, x + 1, y + 1, [x, y])
+        }
+        return false
+    };
+
+
+    async function findPathBST(map, start, end) {
+        let fromPointMap = Array(10000).fill(0);
+        container.children[pointToIndex(start)].style.backgroundColor = "red"
+        container.children[pointToIndex(end)].style.backgroundColor = "blue"
+        async function addPoint(queue, x, y, p) {
+            if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+                return 
+            }
+            let idx = pointToIndex([x, y]);
+            if (map[idx] != 0) {
+                return
+            }
+            fromPointMap[idx] = pointToIndex(p);
+            // await wait(10)
+            // to distinguish from 1 --> block 2--> visited(on the queue) 0 --> unvisited
+            map[idx] = 2;
+            queue.unshift([x,y]);
+        }
+        queue = [start]
+        while (queue.length !== 0) {
+            let [x, y] = queue.pop()
+            let idx = pointToIndex([x,y])
+            if (x == end[0] && y == end[1]) {
+                let p = pointToIndex([x,y])
+                while (p !== pointToIndex(start)) {
+                    await wait(10)
+                    container.children[p].style.backgroundColor = "yellow"
+                    p = fromPointMap[p]
+                }
+                container.children[p].style.backgroundColor = "yellow"
+                return true
+            }
+            container.children[idx].style.backgroundColor = "lightgreen";
+
+            console.log(x, y)
+
+            await addPoint(queue, x + 1, y, [x, y])
+            await addPoint(queue, x - 1, y, [x, y])
+            await addPoint(queue, x, y + 1, [x, y])
+            await addPoint(queue, x, y - 1, [x, y])
+
+            await addPoint(queue, x - 1, y - 1, [x, y])
+            await addPoint(queue, x - 1, y + 1, [x, y])
+            await addPoint(queue, x + 1, y - 1, [x, y])
+            await addPoint(queue, x + 1, y + 1, [x, y])
+        }
+        return false
+    }
 </script>

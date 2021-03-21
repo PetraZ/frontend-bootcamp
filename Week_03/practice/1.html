@@ -1,0 +1,21 @@
+<script>
+    // it support regex literal with /abc/
+    let regexp = /([0-9\.]+)|([ \t])|([\r\n])|(\*)|(\/)|(\+)|(\-)/g
+    let dic = ["Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"]
+
+    function tokenize(source) {
+        let result = null;
+        while(true) {
+            result = regexp.exec(source);
+            if(!result) break;
+            for(let i = 1; i <= dic.length; i++) {
+                if (result[i]) {
+                    console.log(dic[i-1])
+                }
+            }
+            // console.log(result)
+        }
+    }
+
+    tokenize("100 + 200")
+</script>

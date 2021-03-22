@@ -1,0 +1,52 @@
+<script>
+
+    function kmp(text, pattern) {
+        // build the help table
+        table = buildNextTable(pattern)
+
+        let j = 0;
+        let i = 0;
+        while(i <= text.length) {
+            // does find the pattern in text
+            if(j===pattern.length) {
+                return true
+            }
+            if(text[i] === pattern[j]) {
+                j++, i++;
+                continue
+            }
+            if(j > 0) {
+                j = table[j-1]
+            }else{
+                i++
+            }
+        }
+        return false
+    }
+
+    // simplified version of calculating the table, easier to understand the problem and the idea
+    function longestPreSuffix(string) {
+        max = 0
+        for(let l = 1; l < string.length; l++) {
+            if(string.substring(0,l) === string.substring(string.length - l, string.length)){
+                max = l
+            }
+        }
+        return max
+    }
+
+    console.log(longestPreSuffix("abcqwerabc"))
+
+    function buildNextTable(pattern) {
+        let table = new Array(pattern.length).fill(0)
+        for(let i=0; i<pattern.length; i++) {
+            table[i] = longestPreSuffix(pattern.substring(0, i+1))
+        }
+        return table
+    }
+    // "a  b  c  a  b  c  a  b  c"
+    // [0, 0, 0, 1, 2, 3, 4, 5, 6]
+    console.log(buildNextTable("abcabcabc"))
+
+    console.log(kmp("abcabcffabcabcabc", "abcabcabc"))
+</script>

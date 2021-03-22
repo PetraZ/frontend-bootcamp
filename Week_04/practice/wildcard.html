@@ -1,0 +1,63 @@
+<script>
+    // see if source can match the pattern 
+    function find(source, pattern) {
+        // how many stars in total 
+        let starCount = 0;
+        for(let i = 0; i < pattern.length; i++) {
+            if(pattern[i] === "*") {
+                starCount++;
+            }
+        }
+
+        // edge case if no star we can easily check one by one
+        if(starCount === 0) {
+            for(let i = 0; i < pattern.length; i++) {
+                if(pattern[i] !== source[i] && pattern[i] !== "?") {
+                    return false
+                }
+            }
+            return true;
+        }
+        // on pattern
+        let i = 0;
+        // on source
+        let lastIdx = 0;
+
+        // everything before the first star
+        for(i = 0; pattern[i] !== "*"; i++) {
+            if(pattern[i] !== source[i] && pattern[i] !== "?") {
+                return false
+            }
+        }
+        
+        lastIdx = i;
+        
+        // every star except the last one 
+        for(let p = 0; p < starCount - 1; p++) {
+            i++
+            let subPattern = "";
+            while(pattern[i] !== "*") {
+                subPattern += pattern[i];
+                i++;
+            }
+            // supattern is the patter bewtween two stars 
+            let reg = new RegExp(subPattern.replace(/\?/g, "[\\s\\S]"), "g");
+            // start from here to search
+            reg.lastIndex = lastIdx
+
+            match = reg.exec(source);
+            console.log(match)
+            if(!match) {
+                return false
+            }
+            lastIdx = reg.lastIndex
+        }
+
+        for(let j = 0; pattern[pattern.length-1-j] !== "*"; j++ ) {
+            if(source[source.length-1-j] !== pattern[pattern.length-1-j] && pattern[pattern.length-1-j] !== "?") {
+                return false
+            }
+        }
+        return true
+    }
+</script>

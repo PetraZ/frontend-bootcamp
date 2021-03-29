@@ -1,0 +1,14 @@
+<script>
+    let obj = {
+        a: 1,
+        b: 2
+    }
+
+    // a wrapper that you have control over the basic operation behaviour
+    let po = new Proxy(obj, {
+        set(obj, prop, val) {
+            console.log(obj, prop, val)
+        }
+    })
+
+</script>

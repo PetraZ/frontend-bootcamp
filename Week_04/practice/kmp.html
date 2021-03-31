@@ -24,6 +24,34 @@
         return false
     }
 
+    function buildNextTableComplex(pattern) {
+        let table = new Array(pattern.length).fill(0)
+        for(let i = 1; i<pattern.length; i++) {
+            if(pattern[i] === pattern[table[i-1]]) {
+                table[i] = table[i-1] + 1
+                continue
+            }
+            // if not equal 
+            let idx = table[i-1]
+            while(idx != 0) {
+                if(pattern[i] === pattern[idx]) {
+                    table[i] = table[idx-1] + 1
+                    break
+                }
+                idx = table[idx - 1]
+            }
+
+            if(idx === 0) {
+                if(pattern[i] === pattern[idx]) {
+                    table[i] = 1
+                }
+            }
+        }
+        return table
+    }
+
+    
+
     // simplified version of calculating the table, easier to understand the problem and the idea
     function longestPreSuffix(string) {
         max = 0
@@ -37,6 +65,8 @@
 
     console.log(longestPreSuffix("abcqwerabc"))
 
+    
+
     function buildNextTable(pattern) {
         let table = new Array(pattern.length).fill(0)
         for(let i=0; i<pattern.length; i++) {
@@ -47,6 +77,8 @@
     // "a  b  c  a  b  c  a  b  c"
     // [0, 0, 0, 1, 2, 3, 4, 5, 6]
     console.log(buildNextTable("abcabcabc"))
+
+    console.log(buildNextTableComplex("abcabcabc"))
 
     console.log(kmp("abcabcffabcabcabc", "abcabcabc"))
 </script>

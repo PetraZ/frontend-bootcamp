@@ -1,6 +1,5 @@
-
 const net = require('net');
-
+const parser = require("./parser.js")
 
 class Request {
     constructor(options){
@@ -38,7 +37,7 @@ class Request {
             }
 
             conn.on('data', (data) => {
-                console.log(data.toString());
+                // console.log(data.toString());
                 // we need to parse response 
                 parser.receive(data.toString());
                 if(parser.isFinished) {
@@ -226,9 +225,9 @@ void async function(){
             name: "Yiang"
         }
     });
-    console.log(request.toString())
+    // console.log(request.toString())
     // you can choose where to await this though
     let response = await request.send();
 
-    console.log(JSON.stringify(response))
+    let dom = parser.parseHTML(response.body);
 }()

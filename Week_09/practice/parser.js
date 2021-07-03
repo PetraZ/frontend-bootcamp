@@ -1,3 +1,4 @@
+const css = require("css");
 const EOF = Symbol("EOF");
 
 let currentToken = null;
@@ -10,8 +11,22 @@ let spaceReg = /^[\t\n\f ]$/
 let stack = [{type: "document", children:[]}];
 let currentTextNode = null;
 
+// for css rules
+let rules = [];
+function addCSSRules(text) {
+    var ast = css.parse(text);
+    console.log(JSON.stringify(ast, null, "   "))
+    rules.push(...ast.stylesheet.rules);
+}
+
+
+function computeCSS(element) {
+    console.log(rules)
+    console.log("compute css for element", element)
+}
+
 function emit(token) {
-    console.log(token)
+    // console.log(token)
 
     let top = stack[stack.length - 1];
 
@@ -47,7 +62,10 @@ function emit(token) {
        if(top.tagName !== token.tagName) {
            throw new Error("Tag start and end do not match");
        } else {
-           stack.pop();
+            if(top.tagName === "style") {
+                addCSSRules(top.children[0].content);
+            }
+            stack.pop();
        }
        currentTextNode = null;
     } else if(token.type === "text") {
@@ -135,7 +153,7 @@ function tagName(c) {
     } else {
         return tagName
     }
-} 
+}
 
 function beforeAttributeName(c) {
     if(c.match(spaceReg)) {
@@ -167,8 +185,6 @@ function afterAttributeName(c) {
         emit(currentToken);
         return data;
     }
-
-        
 }
 
 function attributeName(c) {

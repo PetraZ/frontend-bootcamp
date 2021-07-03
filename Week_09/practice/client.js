@@ -9,7 +9,7 @@ class Request {
         this.path = options.path || "/"
         this.body = options.body || {}
         this.headers = options.headers || {}
-        if(!this.headers["Content-Type"]) {
+        if(!this.headers["Contenst-Type"]) {
             this.headers["Content-Type"] = "application/x-www-form-urlencoded";
         }
         if(this.headers["Content-Type"] === "application/json")
@@ -17,7 +17,7 @@ class Request {
         else if(this.headers["Content-Type"] === "application/x-www-form-urlencoded")
             // get object attributes . keys
             this.bodyText = Object.keys(this.body).map(key => `${key}=${encodeURIComponent(this.body[key])}`).join('&');
-        
+
         this.headers["Content-Length"] = this.bodyText.length;
     }
 
@@ -38,7 +38,7 @@ class Request {
 
             conn.on('data', (data) => {
                 // console.log(data.toString());
-                // we need to parse response 
+                // we need to parse response
                 parser.receive(data.toString());
                 if(parser.isFinished) {
                     resolve(parser.response());
@@ -63,7 +63,8 @@ ${this.bodyText}`
 }
 
 
-// example
+// Response example
+
 // HTTP/1.1 200 OK
 // Content-Type: text/html
 // Date: Wed, 28 Apr 2021 04:14:10 GMT
@@ -128,14 +129,14 @@ class ResponseParser {
             if (char === ':') {
                 this.current = this.WAITING_HEADER_SPACE;
             } else if (char === '\r') {
-                // search for new headers but found \r\n 
+                // search for new headers but found \r\n
                 this.current = this.WAITING_HEADER_BLOCK_END
                 if (this.headers['Transfer-Encoding'] === 'chunked') {
                     this.bodyParser = new TrunkedBodyParser();
                 }
             } else {
                 this.headerName += char
-                } 
+                }
         } else if (this.current === this.WAITING_HEADER_SPACE) {
             if (char === " ") {
                 this.current = this.WAITING_HEADER_VALUE
@@ -219,7 +220,7 @@ void async function(){
         port: "8088",
         path: "/",
         headers: {
-            ["X"]: "customed"
+            ["X_header"]: "customed"
         },
         body: {
             name: "Yiang"

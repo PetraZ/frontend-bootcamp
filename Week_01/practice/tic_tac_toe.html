@@ -26,7 +26,7 @@
         [0, 0, 0],
         [0, 0, 0],
     ];
-    // next movement color 
+    // next movement color
     let color = 1;
     // ultimate result
     let win = false;
@@ -40,10 +40,10 @@
                 let cell = document.createElement("div")
                 // add cell to its node attribute
                 cell.classList.add("cell")
-                cell.innerText = 
-                pattern[i][j] == 2 ? "X" : 
+                cell.innerText =
+                pattern[i][j] == 2 ? "X" :
                 pattern[i][j] == 1 ? "O" : ""
-    
+
                 cell.addEventListener("click", () => move(i, j))
                 board.appendChild(cell)
             }
@@ -61,7 +61,7 @@
             [0, 0, 0],
             [0, 0, 0],
         ];
-        // next movement color 
+        // next movement color
         color = 1;
         // ultimate result
         win = false;
@@ -110,7 +110,7 @@
         for(let i=0; i<3; i++) {
             let rowValue = 3;
             for (let j=0; j<3; j++) {
-                rowValue = rowValue & pattern[i][j]        
+                rowValue = rowValue & pattern[i][j]
             }
             if (rowValue !== 0) {
                 return true
@@ -120,7 +120,7 @@
         for(let j=0; j<3; j++) {
             let colValue = 3;
             for (let i=0; i<3; i++) {
-                colValue = colValue & pattern[i][j]        
+                colValue = colValue & pattern[i][j]
             }
             if (colValue !== 0) {
                 return true
@@ -162,7 +162,7 @@
                 if (pattern[i][j] != 0) {
                     continue
                 }
-                // copy pattern here 
+                // copy pattern here
                 let clonePattern = clone(pattern)
                 clonePattern[i][j] = color
                 if (checkWin(clonePattern)) {
